@@ -13,7 +13,7 @@ namespace ServiceLocator.UI
     {
         [SerializeField] private EventService eventService;
         [SerializeField] private WaveService waveService;
-        [SerializeField] private PlayerService playerService;
+     
 
         [Header("Gameplay Panel")]
         [SerializeField] private GameObject gameplayPanel;
@@ -39,11 +39,23 @@ namespace ServiceLocator.UI
         [SerializeField] private TextMeshProUGUI gameEndText;
         [SerializeField] private Button playAgainButton;
         [SerializeField] private Button quitButton;
+        public static UIService Instance { get; private set; }
 
-
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(this.gameObject);
+                Debug.LogError("Singleton of UIService is trying to create second instance");
+            }
+        }
         private void Start()
         {
-            monkeySelectionController = new MonkeySelectionUIController(playerService, cellContainer, monkeyCellPrefab, monkeyCellScriptableObjects);
+            monkeySelectionController = new MonkeySelectionUIController( cellContainer, monkeyCellPrefab, monkeyCellScriptableObjects);
             MonkeySelectionPanel.SetActive(false);
             monkeySelectionController.SetActive(false);
 
