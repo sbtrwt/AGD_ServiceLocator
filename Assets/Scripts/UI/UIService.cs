@@ -9,10 +9,10 @@ using ServiceLocator.Player;
 
 namespace ServiceLocator.UI
 {
-    public class UIService : MonoBehaviour
+    public class UIService : GenericMonoSingleton<UIService>
     {
         [SerializeField] private EventService eventService;
-        [SerializeField] private WaveService waveService;
+        
      
 
         [Header("Gameplay Panel")]
@@ -39,20 +39,7 @@ namespace ServiceLocator.UI
         [SerializeField] private TextMeshProUGUI gameEndText;
         [SerializeField] private Button playAgainButton;
         [SerializeField] private Button quitButton;
-        public static UIService Instance { get; private set; }
-
-        private void Awake()
-        {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(this.gameObject);
-                Debug.LogError("Singleton of UIService is trying to create second instance");
-            }
-        }
+        
         private void Start()
         {
             monkeySelectionController = new MonkeySelectionUIController( cellContainer, monkeyCellPrefab, monkeyCellScriptableObjects);
@@ -83,7 +70,7 @@ namespace ServiceLocator.UI
 
         private void OnNextWaveButton()
         {
-            waveService.StarNextWave();
+            WaveService.Instance.StarNextWave();
             SetNextWaveButton(false);
         }
 
