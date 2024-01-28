@@ -25,6 +25,7 @@ namespace ServiceLocator.UI
 
         public void MonkeyDroppedAt(Vector3 dropPosition)
         {
+            Debug.Log("MonkeyDroppedAt");
             playerService.TrySpawningMonkey(monkeyCellSO.Type, monkeyCellSO.Cost, dropPosition);
         }
     }
