@@ -31,8 +31,8 @@ namespace ServiceLocator.Player
         {
             health = playerScriptableObject.Health;
             Money = playerScriptableObject.Money;
-           UIService.Instance.UpdateHealthUI(health);
-            UIService.Instance.UpdateMoneyUI(Money);
+            GameService.Instance.UIService.UpdateHealthUI(health);
+            GameService.Instance.UIService.UpdateMoneyUI(Money);
             activeMonkeys = new List<MonkeyController>();
         }
 
@@ -84,7 +84,7 @@ namespace ServiceLocator.Player
             if (monkeyCost > Money)
                 return;
 
-            MapService.Instance.ValidateSpawnPosition(dropPosition);
+          GameService.Instance.MapService.ValidateSpawnPosition(dropPosition);
         }
 
         public void TrySpawningMonkey(MonkeyType monkeyType, int monkeyCost, Vector3 dropPosition)
@@ -92,7 +92,7 @@ namespace ServiceLocator.Player
             if (monkeyCost > Money)
                 return;
 
-            if (MapService.Instance.TryGetMonkeySpawnPosition(dropPosition, out Vector3 spawnPosition))
+            if (GameService.Instance.MapService.TryGetMonkeySpawnPosition(dropPosition, out Vector3 spawnPosition))
             {
                 SpawnMonkey(monkeyType, spawnPosition);
                 GameService.Instance.soundService.PlaySoundEffects(SoundType.SpawnMonkey);
@@ -118,7 +118,7 @@ namespace ServiceLocator.Player
             int reducedHealth = health - damageToTake;
             health = reducedHealth <= 0 ? 0 : health - damageToTake;
 
-            UIService.Instance.UpdateHealthUI(health);
+            GameService.Instance.UIService.UpdateHealthUI(health);
             if(health <= 0)
                 PlayerDeath();
         }
@@ -126,15 +126,15 @@ namespace ServiceLocator.Player
         private void DeductMoney(int moneyToDedecut)
         {
             Money -= moneyToDedecut;
-            UIService.Instance.UpdateMoneyUI(Money);
+            GameService.Instance.UIService.UpdateMoneyUI(Money);
         }
 
         public void GetReward(int reward)
         {
             Money += reward;
-            UIService.Instance.UpdateMoneyUI(Money);
+            GameService.Instance.UIService.UpdateMoneyUI(Money);
         }
 
-        private void PlayerDeath() => UIService.Instance.UpdateGameEndUI(false);
+        private void PlayerDeath() => GameService.Instance.UIService.UpdateGameEndUI(false);
     }
 }
