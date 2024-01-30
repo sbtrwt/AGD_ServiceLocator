@@ -7,15 +7,11 @@ using ServiceLocator.Sound;
 
 namespace ServiceLocator.Player
 {
-    public class PlayerService : MonoBehaviour
+    public class PlayerService
     {
-        [SerializeField] private UIService uiService;
-        [SerializeField] private MapService mapService;
-        [SerializeField] private SoundService soundService;
-        [SerializeField] private PlayerService playerService;
 
-        [SerializeField] public PlayerScriptableObject playerScriptableObject;
-
+        //[SerializeField] public PlayerScriptableObject playerScriptableObject;
+        private PlayerScriptableObject playerScriptableObject;
         private ProjectilePool projectilePool;
 
         private List<MonkeyController> activeMonkeys;
@@ -23,9 +19,11 @@ namespace ServiceLocator.Player
         private int health;
         public int Money { get; private set; }
 
-        private void Start()
+       
+        public PlayerService(PlayerScriptableObject playerScriptableObject)
         {
-            projectilePool = new ProjectilePool(playerService, playerScriptableObject.ProjectilePrefab, playerScriptableObject.ProjectileScriptableObjects);
+            this.playerScriptableObject = playerScriptableObject;
+            projectilePool = new ProjectilePool(playerScriptableObject.ProjectilePrefab, playerScriptableObject.ProjectileScriptableObjects);
             InitializeVariables();
         }
 
@@ -33,13 +31,17 @@ namespace ServiceLocator.Player
         {
             health = playerScriptableObject.Health;
             Money = playerScriptableObject.Money;
-            uiService.UpdateHealthUI(health);
-            uiService.UpdateMoneyUI(Money);
+            GameService.Instance.UIService.UpdateHealthUI(health);
+            GameService.Instance.UIService.UpdateMoneyUI(Money);
             activeMonkeys = new List<MonkeyController>();
         }
 
         public void Update()
         {
+            if(activeMonkeys.Count > 0)
+            {
+                activeMonkeys.ForEach(x => x.UpdateMonkey());
+            }
             if(Input.GetMouseButtonDown(0))
             {
                 TrySelectingMonkey();
@@ -82,7 +84,7 @@ namespace ServiceLocator.Player
             if (monkeyCost > Money)
                 return;
 
-            mapService.ValidateSpawnPosition(dropPosition);
+          GameService.Instance.MapService.ValidateSpawnPosition(dropPosition);
         }
 
         public void TrySpawningMonkey(MonkeyType monkeyType, int monkeyCost, Vector3 dropPosition)
@@ -90,10 +92,10 @@ namespace ServiceLocator.Player
             if (monkeyCost > Money)
                 return;
 
-            if (mapService.TryGetMonkeySpawnPosition(dropPosition, out Vector3 spawnPosition))
+            if (GameService.Instance.MapService.TryGetMonkeySpawnPosition(dropPosition, out Vector3 spawnPosition))
             {
                 SpawnMonkey(monkeyType, spawnPosition);
-                soundService.PlaySoundEffects(SoundType.SpawnMonkey);
+                GameService.Instance.soundService.PlaySoundEffects(SoundType.SpawnMonkey);
             }
         }
 
@@ -116,7 +118,7 @@ namespace ServiceLocator.Player
             int reducedHealth = health - damageToTake;
             health = reducedHealth <= 0 ? 0 : health - damageToTake;
 
-            uiService.UpdateHealthUI(health);
+            GameService.Instance.UIService.UpdateHealthUI(health);
             if(health <= 0)
                 PlayerDeath();
         }
@@ -124,15 +126,15 @@ namespace ServiceLocator.Player
         private void DeductMoney(int moneyToDedecut)
         {
             Money -= moneyToDedecut;
-            uiService.UpdateMoneyUI(Money);
+            GameService.Instance.UIService.UpdateMoneyUI(Money);
         }
 
         public void GetReward(int reward)
         {
             Money += reward;
-            uiService.UpdateMoneyUI(Money);
+            GameService.Instance.UIService.UpdateMoneyUI(Money);
         }
 
-        private void PlayerDeath() => uiService.UpdateGameEndUI(false);
+        private void PlayerDeath() => GameService.Instance.UIService.UpdateGameEndUI(false);
     }
 }
