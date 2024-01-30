@@ -6,14 +6,13 @@ using UnityEngine.SceneManagement;
 using ServiceLocator.Events;
 using ServiceLocator.Wave;
 using ServiceLocator.Player;
+using ServiceLocator.Main;
 
 namespace ServiceLocator.UI
 {
     public class UIService : MonoBehaviour
     {
-        [SerializeField] private EventService eventService;
-        
-     
+       
 
         [Header("Gameplay Panel")]
         [SerializeField] private GameObject gameplayPanel;
@@ -57,7 +56,7 @@ namespace ServiceLocator.UI
             SubscribeToEvents();
         }
 
-        public void SubscribeToEvents() => eventService.OnMapSelected.AddListener(OnMapSelected);
+        public void SubscribeToEvents() => GameService.Instance.EventService.OnMapSelected.AddListener(OnMapSelected);
 
         public void OnMapSelected(int mapID)
         {
@@ -70,7 +69,7 @@ namespace ServiceLocator.UI
 
         private void OnNextWaveButton()
         {
-            GameService.Instance.waveService.StarNextWave();
+            GameService.Instance.WaveService.StarNextWave();
             SetNextWaveButton(false);
         }
 

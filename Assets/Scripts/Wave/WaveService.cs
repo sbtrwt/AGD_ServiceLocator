@@ -7,23 +7,23 @@ using ServiceLocator.UI;
 using ServiceLocator.Map;
 using ServiceLocator.Sound;
 using ServiceLocator.Player;
+using ServiceLocator.Main;
 
 namespace ServiceLocator.Wave
 {
     public class WaveService 
     {
-        [SerializeField] private EventService eventService;
+      
             
-        [SerializeField] private WaveScriptableObject waveScriptableObject;
+       private WaveScriptableObject waveScriptableObject;
         private BloonPool bloonPool;
 
         private int currentWaveId;
         private List<WaveData> waveDatas;
         private List<BloonController> activeBloons;
-      
-       public WaveService(EventService eventService, WaveScriptableObject waveScriptableObject)
+
+        public WaveService(WaveScriptableObject waveScriptableObject)
         {
-            this.eventService = eventService;
             this.waveScriptableObject = waveScriptableObject;
             InitializeBloons();
             SubscribeToEvents();
@@ -35,7 +35,7 @@ namespace ServiceLocator.Wave
             activeBloons = new List<BloonController>();
         }
 
-        private void SubscribeToEvents() => eventService.OnMapSelected.AddListener(LoadWaveDataForMap);
+        private void SubscribeToEvents() => GameService.Instance.EventService.OnMapSelected.AddListener(LoadWaveDataForMap);
 
         private void LoadWaveDataForMap(int mapId)
         {
@@ -77,7 +77,7 @@ namespace ServiceLocator.Wave
             activeBloons.Remove(bloon);
             if (HasCurrentWaveEnded())
             {
-                GameService.Instance.soundService.PlaySoundEffects(Sound.SoundType.WaveComplete);
+                GameService.Instance.SoundService.PlaySoundEffects(Sound.SoundType.WaveComplete);
                 GameService.Instance.UIService.UpdateWaveProgressUI(currentWaveId, waveDatas.Count);
 
                 if(IsLevelWon())

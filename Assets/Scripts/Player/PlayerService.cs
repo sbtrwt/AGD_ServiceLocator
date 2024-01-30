@@ -4,13 +4,14 @@ using ServiceLocator.Player.Projectile;
 using ServiceLocator.UI;
 using ServiceLocator.Map;
 using ServiceLocator.Sound;
+using ServiceLocator.Main;
 
 namespace ServiceLocator.Player
 {
     public class PlayerService
     {
 
-        //[SerializeField] public PlayerScriptableObject playerScriptableObject;
+     
         private PlayerScriptableObject playerScriptableObject;
         private ProjectilePool projectilePool;
 
@@ -95,7 +96,7 @@ namespace ServiceLocator.Player
             if (GameService.Instance.MapService.TryGetMonkeySpawnPosition(dropPosition, out Vector3 spawnPosition))
             {
                 SpawnMonkey(monkeyType, spawnPosition);
-                GameService.Instance.soundService.PlaySoundEffects(SoundType.SpawnMonkey);
+                GameService.Instance.SoundService.PlaySoundEffects(SoundType.SpawnMonkey);
             }
         }
 

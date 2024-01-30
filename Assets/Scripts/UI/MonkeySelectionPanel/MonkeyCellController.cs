@@ -1,5 +1,6 @@
 using UnityEngine;
 using ServiceLocator.Player;
+using ServiceLocator.Main;
 
 namespace ServiceLocator.UI
 {
@@ -20,12 +21,12 @@ namespace ServiceLocator.UI
 
         public void MonkeyDraggedAt(Vector3 dragPosition)
         {
-            GameService.Instance.playerService.ValidateSpawnPosition(monkeyCellSO.Cost, dragPosition);
+            GameService.Instance.PlayerService.ValidateSpawnPosition(monkeyCellSO.Cost, dragPosition);
         }
 
         public void MonkeyDroppedAt(Vector3 dropPosition)
         {
-            GameService.Instance.playerService.TrySpawningMonkey(monkeyCellSO.Type, monkeyCellSO.Cost, dropPosition);
+            GameService.Instance.PlayerService.TrySpawningMonkey(monkeyCellSO.Type, monkeyCellSO.Cost, dropPosition);
         }
     }
 }
