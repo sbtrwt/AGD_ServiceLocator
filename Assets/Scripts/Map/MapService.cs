@@ -3,24 +3,31 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using ServiceLocator.Player;
 using ServiceLocator.Events;
+using ServiceLocator.Main;
 
 namespace ServiceLocator.Map
 {
-    public class MapService : MonoBehaviour
+    public class MapService 
     {
-        [SerializeField] private EventService eventService;
-        [SerializeField] private MapScriptableObject mapScriptableObject;
+        private EventService eventService;
+        private MapScriptableObject mapScriptableObject;
 
         private Grid currentGrid;
         private Tilemap currentTileMap;
         private MapData currentMapData;
         private SpriteRenderer tileOverlay;
-       
-        private void Start()
+
+        public MapService(MapScriptableObject mapScriptableObject)
         {
-            SubscribeToEvents();
+            this.mapScriptableObject = mapScriptableObject;
             tileOverlay = Object.Instantiate(mapScriptableObject.TileOverlay).GetComponent<SpriteRenderer>();
             ResetTileOverlay();
+           
+        }
+        public void Init(EventService eventService)
+        {
+            this.eventService = eventService;
+            SubscribeToEvents();
         }
 
         private void SubscribeToEvents() => eventService.OnMapSelected.AddListener(LoadMap);
@@ -28,7 +35,7 @@ namespace ServiceLocator.Map
         private void LoadMap(int mapId)
         {
             currentMapData = mapScriptableObject.MapDatas.Find(mapData => mapData.MapID == mapId);
-            currentGrid = Instantiate(currentMapData.MapPrefab);
+            currentGrid = Object.Instantiate(currentMapData.MapPrefab);
             currentTileMap = currentGrid.GetComponentInChildren<Tilemap>();
         }
 

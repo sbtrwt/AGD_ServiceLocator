@@ -7,31 +7,45 @@ using ServiceLocator.UI;
 using ServiceLocator.Map;
 using ServiceLocator.Sound;
 using ServiceLocator.Player;
+using ServiceLocator.Main;
 
 namespace ServiceLocator.Wave
 {
     public class WaveService 
     {
-        [SerializeField] private EventService eventService;
-            
-        [SerializeField] private WaveScriptableObject waveScriptableObject;
+
+        private EventService eventService;
+        private MapService mapService;
+        private UIService uIService;
+        private SoundService soundService;
+        private PlayerService playerService;
+
+        private WaveScriptableObject waveScriptableObject;
         private BloonPool bloonPool;
 
         private int currentWaveId;
         private List<WaveData> waveDatas;
         private List<BloonController> activeBloons;
-      
-       public WaveService(EventService eventService, WaveScriptableObject waveScriptableObject)
+
+        public WaveService(WaveScriptableObject waveScriptableObject)
+        {
+            this.waveScriptableObject = waveScriptableObject;
+       
+        }
+        public void Init(EventService eventService, UIService uIService, MapService mapService, SoundService soundService, PlayerService playerService)
         {
             this.eventService = eventService;
-            this.waveScriptableObject = waveScriptableObject;
-            InitializeBloons();
+            this.uIService = uIService;
+            this.mapService = mapService;
+            this.soundService = soundService;
+            this.playerService = playerService;
+
+            InitializeBloons();  
             SubscribeToEvents();
         }
-
         private void InitializeBloons()
         {
-            bloonPool = new BloonPool(  waveScriptableObject);
+            bloonPool = new BloonPool(  waveScriptableObject,playerService,this,soundService);
             activeBloons = new List<BloonController>();
         }
 
@@ -41,14 +55,14 @@ namespace ServiceLocator.Wave
         {
             currentWaveId = 0;
             waveDatas = waveScriptableObject.WaveConfigurations.Find(config => config.MapID == mapId).WaveDatas;
-            GameService.Instance.UIService.UpdateWaveProgressUI(currentWaveId, waveDatas.Count);
+            uIService.UpdateWaveProgressUI(currentWaveId, waveDatas.Count);
         }
 
         public void StarNextWave()
         {
             currentWaveId++;
             var bloonsToSpawn = GetBloonsForCurrentWave();
-            var spawnPosition = GameService.Instance.MapService.GetBloonSpawnPositionForCurrentMap();
+            var spawnPosition = mapService.GetBloonSpawnPositionForCurrentMap();
             SpawnBloons(bloonsToSpawn, spawnPosition, 0, waveScriptableObject.SpawnRate);
         }
 
@@ -58,7 +72,7 @@ namespace ServiceLocator.Wave
             {
                 BloonController bloon = bloonPool.GetBloon(bloonType);
                 bloon.SetPosition(spawnPosition);
-                bloon.SetWayPoints(GameService.Instance.MapService.GetWayPointsForCurrentMap(), startingWaypointIndex);
+                bloon.SetWayPoints(mapService.GetWayPointsForCurrentMap(), startingWaypointIndex);
 
                 AddBloon(bloon);
                 await Task.Delay(Mathf.RoundToInt(spawnRate * 1000));
@@ -77,13 +91,13 @@ namespace ServiceLocator.Wave
             activeBloons.Remove(bloon);
             if (HasCurrentWaveEnded())
             {
-                GameService.Instance.soundService.PlaySoundEffects(Sound.SoundType.WaveComplete);
-                GameService.Instance.UIService.UpdateWaveProgressUI(currentWaveId, waveDatas.Count);
+                soundService.PlaySoundEffects(Sound.SoundType.WaveComplete);
+                uIService.UpdateWaveProgressUI(currentWaveId, waveDatas.Count);
 
                 if(IsLevelWon())
-                    GameService.Instance.UIService.UpdateGameEndUI(true);
+                    uIService.UpdateGameEndUI(true);
                 else
-                    GameService.Instance.UIService.SetNextWaveButton(true);
+                    uIService.SetNextWaveButton(true);
             }
         }
 

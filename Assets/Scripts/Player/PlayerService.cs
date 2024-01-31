@@ -4,13 +4,17 @@ using ServiceLocator.Player.Projectile;
 using ServiceLocator.UI;
 using ServiceLocator.Map;
 using ServiceLocator.Sound;
+using ServiceLocator.Main;
 
 namespace ServiceLocator.Player
 {
     public class PlayerService
     {
 
-        //[SerializeField] public PlayerScriptableObject playerScriptableObject;
+        private UIService uIService;
+        private MapService mapService;
+        private SoundService soundService;
+
         private PlayerScriptableObject playerScriptableObject;
         private ProjectilePool projectilePool;
 
@@ -19,30 +23,37 @@ namespace ServiceLocator.Player
         private int health;
         public int Money { get; private set; }
 
-       
+
         public PlayerService(PlayerScriptableObject playerScriptableObject)
         {
             this.playerScriptableObject = playerScriptableObject;
-            projectilePool = new ProjectilePool(playerScriptableObject.ProjectilePrefab, playerScriptableObject.ProjectileScriptableObjects);
-            InitializeVariables();
+            projectilePool = new ProjectilePool(playerScriptableObject.ProjectilePrefab, playerScriptableObject.ProjectileScriptableObjects, this);
+
         }
 
+        public void Init(UIService uIservice, MapService mapService, SoundService soundService)
+        {
+            this.uIService = uIservice;
+            this.mapService = mapService;
+            this.soundService = soundService;
+            InitializeVariables();
+        }
         private void InitializeVariables()
         {
             health = playerScriptableObject.Health;
             Money = playerScriptableObject.Money;
-            GameService.Instance.UIService.UpdateHealthUI(health);
-            GameService.Instance.UIService.UpdateMoneyUI(Money);
+            uIService.UpdateHealthUI(health);
+            uIService.UpdateMoneyUI(Money);
             activeMonkeys = new List<MonkeyController>();
         }
 
         public void Update()
         {
-            if(activeMonkeys.Count > 0)
+            if (activeMonkeys.Count > 0)
             {
                 activeMonkeys.ForEach(x => x.UpdateMonkey());
             }
-            if(Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0))
             {
                 TrySelectingMonkey();
             }
@@ -54,7 +65,7 @@ namespace ServiceLocator.Player
 
             foreach (RaycastHit2D hit in hits)
             {
-                if(IsMonkeyCollider(hit.collider))
+                if (IsMonkeyCollider(hit.collider))
                 {
                     SetSelectedMonkeyView(hit.collider.GetComponent<MonkeyView>());
                     return;
@@ -84,7 +95,7 @@ namespace ServiceLocator.Player
             if (monkeyCost > Money)
                 return;
 
-          GameService.Instance.MapService.ValidateSpawnPosition(dropPosition);
+            mapService.ValidateSpawnPosition(dropPosition);
         }
 
         public void TrySpawningMonkey(MonkeyType monkeyType, int monkeyCost, Vector3 dropPosition)
@@ -92,17 +103,17 @@ namespace ServiceLocator.Player
             if (monkeyCost > Money)
                 return;
 
-            if (GameService.Instance.MapService.TryGetMonkeySpawnPosition(dropPosition, out Vector3 spawnPosition))
+            if (mapService.TryGetMonkeySpawnPosition(dropPosition, out Vector3 spawnPosition))
             {
                 SpawnMonkey(monkeyType, spawnPosition);
-                GameService.Instance.soundService.PlaySoundEffects(SoundType.SpawnMonkey);
+                soundService.PlaySoundEffects(SoundType.SpawnMonkey);
             }
         }
 
         public void SpawnMonkey(MonkeyType monkeyType, Vector3 spawnPosition)
         {
             MonkeyScriptableObject monkeyScriptableObject = GetMonkeyScriptableObjectByType(monkeyType);
-            MonkeyController monkey = new MonkeyController(monkeyScriptableObject, projectilePool);
+            MonkeyController monkey = new MonkeyController(monkeyScriptableObject, projectilePool, soundService);
             monkey.SetPosition(spawnPosition);
             activeMonkeys.Add(monkey);
 
@@ -112,29 +123,29 @@ namespace ServiceLocator.Player
         private MonkeyScriptableObject GetMonkeyScriptableObjectByType(MonkeyType monkeyType) => playerScriptableObject.MonkeyScriptableObjects.Find(so => so.Type == monkeyType);
 
         public void ReturnProjectileToPool(ProjectileController projectileToReturn) => projectilePool.ReturnItem(projectileToReturn);
-        
+
         public void TakeDamage(int damageToTake)
         {
             int reducedHealth = health - damageToTake;
             health = reducedHealth <= 0 ? 0 : health - damageToTake;
 
-            GameService.Instance.UIService.UpdateHealthUI(health);
-            if(health <= 0)
+            uIService.UpdateHealthUI(health);
+            if (health <= 0)
                 PlayerDeath();
         }
 
         private void DeductMoney(int moneyToDedecut)
         {
             Money -= moneyToDedecut;
-            GameService.Instance.UIService.UpdateMoneyUI(Money);
+            uIService.UpdateMoneyUI(Money);
         }
 
         public void GetReward(int reward)
         {
             Money += reward;
-            GameService.Instance.UIService.UpdateMoneyUI(Money);
+            uIService.UpdateMoneyUI(Money);
         }
 
-        private void PlayerDeath() => GameService.Instance.UIService.UpdateGameEndUI(false);
+        private void PlayerDeath() => uIService.UpdateGameEndUI(false);
     }
 }
