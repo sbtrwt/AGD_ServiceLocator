@@ -31,7 +31,7 @@ namespace ServiceLocator.Player
 
         }
 
-        public void InjectDependency(UIService uIservice, MapService mapService, SoundService soundService)
+        public void Init(UIService uIservice, MapService mapService, SoundService soundService)
         {
             this.uIService = uIservice;
             this.mapService = mapService;
